@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>WinOverlayGen</title>
   <link id="theme-css" rel="stylesheet" href="https://unpkg.com/xp.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Поменял библиотеку на более мощную -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <style>
     body {
       background-color: #2c2c2c;
@@ -61,14 +62,12 @@
     }
     .window {
       width: 1280px; 
-      transition: width 0.1s;
     }
     .window-body {
       margin: 0 !important;
       padding: 0 !important;
       height: 720px; 
       background-color: #00ff00;
-      transition: height 0.1s;
     }
     .credits {
       position: fixed;
@@ -84,9 +83,6 @@
       color: #4CAF50;
       text-decoration: none;
       font-weight: bold;
-    }
-    .credits a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
@@ -115,16 +111,18 @@
   </div>
 
   <div class="preview-container">
-    <div class="window" id="xpWindow">
-      <div class="title-bar">
-        <div class="title-bar-text" id="windowTitle">C:\Users\Video\project.avi</div>
-        <div class="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
+    <div id="capture-area"> <!-- Обертка для чистого захвата -->
+      <div class="window" id="xpWindow">
+        <div class="title-bar">
+          <div class="title-bar-text" id="windowTitle">C:\Users\Video\project.avi</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
         </div>
+        <div class="window-body" id="xpWindowBody"></div>
       </div>
-      <div class="window-body" id="xpWindowBody"></div>
     </div>
   </div>
 
@@ -168,20 +166,22 @@
 
     function downloadImage() {
       const btn = document.querySelector('.download-btn');
+      const node = document.getElementById('capture-area');
       btn.textContent = "Сохраняю...";
-      
-      html2canvas(xpWindow, {
-        backgroundColor: null,
-        useCORS: true,       // Исправляет проблему с внешними ресурсами
-        allowTaint: true,    // Позволяет захватывать стилизованные элементы
-        scale: 2             // Делает картинку в 2 раза четче
-      }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = themeSelect.value + '_frame_' + widthSlider.value + 'x' + heightSlider.value + '.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        btn.textContent = "Скачать PNG";
-      });
+
+      // Используем html-to-image для идеального захвата
+      htmlToImage.toPng(node, { pixelRatio: 2 })
+        .then(function (dataUrl) {
+          const link = document.createElement('a');
+          link.download = themeSelect.value + '_frame_' + widthSlider.value + 'x' + heightSlider.value + '.png';
+          link.href = dataUrl;
+          link.click();
+          btn.textContent = "Скачать PNG";
+        })
+        .catch(function (error) {
+          console.error('Ошибка при генерации:', error);
+          btn.textContent = "Ошибка!";
+        });
     }
   </script>
 </body>
