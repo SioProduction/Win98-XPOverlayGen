@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>WinOverlayGen</title>
+  <!-- Стартовая ссылка заменена, чтобы сразу отображался нужный визуал -->
+  <link id="theme-css" rel="stylesheet" href="https://unpkg.com/98.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      background-color: #2c2c2c;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .controls {
+      background: #333;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    input[type="text"], select { 
+      padding: 5px; 
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #222;
+      color: white;
+    }
+    button.download-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    button.download-btn:hover { background: #45a049; }
+    .preview-container {
+      padding: 50px;
+      display: flex;
+      justify-content: center;
+      overflow: auto;
+      max-width: 100%;
+    }
+    .window {
+      width: 1280px; 
+      transition: width 0.1s;
+    }
+    .window-body {
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 720px; 
+      background-color: #00ff00;
+      transition: height 0.1s;
+    }
+    .credits {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      font-size: 12px;
+      color: #888;
+      background: rgba(30, 30, 30, 0.8);
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .credits a {
+      color: #4CAF50;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .credits a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <div class="control-group">
+      <label>Стиль ОС:</label>
+      <select id="themeSelect">
+        <option value="xp">Windows XP</option>
+        <option value="98">Windows 98</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Название файла:</label>
+      <input type="text" id="titleInput" value="C:\Users\Video\project.avi">
+    </div>
+    <div class="control-group">
+      <label>Ширина: <span id="widthValue">1280</span>px</label>
+      <input type="range" id="widthSlider" min="200" max="2500" value="1280">
+    </div>
+    <div class="control-group">
+      <label>Высота видео: <span id="heightValue">720</span>px</label>
+      <input type="range" id="heightSlider" min="100" max="1500" value="720">
+    </div>
+    <button class="download-btn" onclick="downloadImage()">Скачать PNG</button>
+  </div>
+
+  <div class="preview-container">
+    <div class="window" id="xpWindow">
+      <div class="title-bar">
+        <div class="title-bar-text" id="windowTitle">C:\Users\Video\project.avi</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body" id="xpWindowBody"></div>
+    </div>
+  </div>
+
+  <div class="credits">
+    Powered by <a href="https://botoxparty.github.io/XP.css/" target="_blank">XP.css</a> & <a href="https://jdan.github.io/98.css/" target="_blank">98.css</a>
+  </div>
+
+  <script>
+    const themeSelect = document.getElementById('themeSelect');
+    const themeCss = document.getElementById('theme-css');
+    const titleInput = document.getElementById('titleInput');
+    const windowTitle = document.getElementById('windowTitle');
+    const widthSlider = document.getElementById('widthSlider');
+    const widthValue = document.getElementById('widthValue');
+    const xpWindow = document.getElementById('xpWindow');
+    const heightSlider = document.getElementById('heightSlider');
+    const heightValue = document.getElementById('heightValue');
+    const xpWindowBody = document.getElementById('xpWindowBody');
+
+    // Логика переключения инвертирована 
+    themeSelect.addEventListener('change', function() {
+      if (this.value === '98') {
+        themeCss.href = 'https://unpkg.com/xp.css';
+      } else {
+        themeCss.href = 'https://unpkg.com/98.css';
+      }
+    });
+
+    titleInput.addEventListener('input', function() {
+      windowTitle.textContent = this.value;
+    });
+
+    widthSlider.addEventListener('input', function() {
+      xpWindow.style.width = this.value + 'px';
+      widthValue.textContent = this.value;
+    });
+
+    heightSlider.addEventListener('input', function() {
+      xpWindowBody.style.height = this.value + 'px';
+      heightValue.textContent = this.value;
+    });
+
+    function downloadImage() {
+      const btn = document.querySelector('.download-btn');
+      btn.textContent = "Сохраняю...";
+      
+      html2canvas(xpWindow, {
+        backgroundColor: null
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = themeSelect.value + '_frame_' + widthSlider.value + 'x' + heightSlider.value + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = "Скачать PNG";
+      });
+    }
+  </script>
+</body>
+</html>
