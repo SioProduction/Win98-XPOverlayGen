@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>WinOverlayGen</title>
-  <!-- Стартовая ссылка заменена, чтобы сразу отображался нужный визуал -->
-  <link id="theme-css" rel="stylesheet" href="https://unpkg.com/98.css">
+  <link id="theme-css" rel="stylesheet" href="https://unpkg.com/xp.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
@@ -145,12 +144,11 @@
     const heightValue = document.getElementById('heightValue');
     const xpWindowBody = document.getElementById('xpWindowBody');
 
-    // Логика переключения инвертирована 
     themeSelect.addEventListener('change', function() {
       if (this.value === '98') {
-        themeCss.href = 'https://unpkg.com/xp.css';
-      } else {
         themeCss.href = 'https://unpkg.com/98.css';
+      } else {
+        themeCss.href = 'https://unpkg.com/xp.css';
       }
     });
 
@@ -173,7 +171,10 @@
       btn.textContent = "Сохраняю...";
       
       html2canvas(xpWindow, {
-        backgroundColor: null
+        backgroundColor: null,
+        useCORS: true,       // Исправляет проблему с внешними ресурсами
+        allowTaint: true,    // Позволяет захватывать стилизованные элементы
+        scale: 2             // Делает картинку в 2 раза четче
       }).then(canvas => {
         const link = document.createElement('a');
         link.download = themeSelect.value + '_frame_' + widthSlider.value + 'x' + heightSlider.value + '.png';
